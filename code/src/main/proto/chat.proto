@@ -6,6 +6,7 @@ option java_multiple_files = true;
 option java_package = "ru.nsu.dialexis.proto";
 
 service ChatEndpoint {
+  rpc RegisterPeer (PeerRegistrationRequest) returns (ChatMessageAck);
   rpc SendMessage (ChatMessageRequest) returns (ChatMessageAck);
 }
 
@@ -13,8 +14,11 @@ message ChatMessageRequest {
   string sender = 1;
   string timestamp = 2;
   string text = 3;
-  string sender_host = 4;
-  int32 sender_port = 5;
+}
+
+message PeerRegistrationRequest {
+  string host = 1;
+  int32 port = 2;
 }
 
 message ChatMessageAck {

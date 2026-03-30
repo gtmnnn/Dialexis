@@ -24,7 +24,7 @@ public final class ChatApplication {
         chatService.setMessageListener(consoleUi::showMessage);
         peerSessionManager.setSystemMessageListener(consoleUi::showSystemMessage);
 
-        ChatGrpcEndpoint endpoint = new ChatGrpcEndpoint(chatService, new ProtoMessageMapper());
+        ChatGrpcEndpoint endpoint = new ChatGrpcEndpoint(chatService, peerSessionManager, new ProtoMessageMapper());
         peerSessionManager.startServer(options.listenPort(), endpoint);
         consoleUi.showSystemMessage("Local node is listening on port " + options.listenPort());
 

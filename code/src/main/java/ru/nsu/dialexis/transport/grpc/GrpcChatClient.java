@@ -34,6 +34,13 @@ public class GrpcChatClient {
         blockingStub.sendMessage(mapper.toProto(message));
     }
 
+    public void registerPeer(PeerAddress address) {
+        if (blockingStub == null) {
+            throw new IllegalStateException("Remote peer is not connected");
+        }
+        blockingStub.registerPeer(mapper.toRegistrationProto(address));
+    }
+
     public void close() {
         blockingStub = null;
         if (channel != null) {

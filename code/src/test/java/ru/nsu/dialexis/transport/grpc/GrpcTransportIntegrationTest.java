@@ -27,7 +27,7 @@ class GrpcTransportIntegrationTest {
         RecordingListener listener = new RecordingListener();
         receiverService.setMessageListener(listener);
 
-        ChatGrpcEndpoint endpoint = new ChatGrpcEndpoint(receiverService, new ProtoMessageMapper());
+        ChatGrpcEndpoint endpoint = new ChatGrpcEndpoint(receiverService, receiverSession, new ProtoMessageMapper());
         receiverSession.startServer(port, endpoint);
 
         try {
@@ -57,6 +57,44 @@ class GrpcTransportIntegrationTest {
         }
     }
 
+    @Test
+    void supportsBidirectionalMessagingAfterHandshake() throws Exception {
+        int alicePort = findFreePort();
+        int bobPort = findFreePort();
+
+        PeerSessionManager aliceSession = new PeerSessionManager();
+        ChatService aliceService = new ChatService("alice", aliceSession);
+        RecordingListener aliceListener = new RecordingListener();
+        aliceService.setMessageListener(aliceListener);
+        aliceSession.startServer(alicePort, new ChatGrpcEndpoint(aliceService, aliceSession, new ProtoMessageMapper()));
+
+        PeerSessionManager bobSession = new PeerSessionManager();
+        ChatService bobService = new ChatService("bob", bobSession);
+        RecordingListener bobListener = new RecordingListener();
+        bobService.setMessageListener(bobListener);
+        bobSession.startServer(bobPort, new ChatGrpcEndpoint(bobService, bobSession, new ProtoMessageMapper()));
+
+        try {
+            bobSession.connect(new PeerAddress("127.0.0.1", alicePort));
+
+            bobService.sendMessage("hello Alice");
+            aliceListener.awaitMessage();
+            assertEquals("bob", aliceListener.lastMessage.sender());
+            assertEquals("hello Alice", aliceListener.lastMessage.text());
+
+            aliceListener.reset();
+            bobListener.reset();
+
+            aliceService.sendMessage("hello Bob");
+            bobListener.awaitMessage();
+            assertEquals("alice", bobListener.lastMessage.sender());
+            assertEquals("hello Bob", bobListener.lastMessage.text());
+        } finally {
+            aliceSession.shutdown();
+            bobSession.shutdown();
+        }
+    }
+
     private static int findFreePort() throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(0)) {
             return serverSocket.getLocalPort();
@@ -72,7 +110,7 @@ class GrpcTransportIntegrationTest {
     }
 
     private static final class RecordingListener implements ru.nsu.dialexis.domain.MessageListener {
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private CountDownLatch latch = new CountDownLatch(1);
         private volatile ChatMessage lastMessage;
 
         @Override
@@ -85,6 +123,11 @@ class GrpcTransportIntegrationTest {
             if (!latch.await(Duration.ofSeconds(3).toMillis(), TimeUnit.MILLISECONDS)) {
                 throw new AssertionError("Message was not delivered in time");
             }
+        }
+
+        void reset() {
+            this.lastMessage = null;
+            this.latch = new CountDownLatch(1);
         }
     }
 }

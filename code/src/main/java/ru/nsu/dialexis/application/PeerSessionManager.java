@@ -32,8 +32,12 @@ public class PeerSessionManager {
     }
 
     public void connect(PeerAddress address) {
+        if (localAddress == null) {
+            throw new IllegalStateException("Local server must be started before connecting to a peer");
+        }
         client.connect(address);
         remotePeer = address;
+        client.registerPeer(localAddress);
         emitSystemMessage("Connected to peer " + address.host() + ":" + address.port());
     }
 
@@ -44,10 +48,6 @@ public class PeerSessionManager {
         }
         client.send(message);
         emitSystemMessage("Sent message to " + remotePeer.host() + ":" + remotePeer.port());
-    }
-
-    public PeerAddress localAddress() {
-        return localAddress;
     }
 
     public void setSystemMessageListener(Consumer<String> systemMessageListener) {
@@ -61,7 +61,7 @@ public class PeerSessionManager {
         if (remotePeer == null || !remotePeer.equals(address)) {
             client.connect(address);
             remotePeer = address;
-            emitSystemMessage("Registered reply peer " + address.host() + ":" + address.port());
+            emitSystemMessage("Registered peer " + address.host() + ":" + address.port());
         }
     }
 
