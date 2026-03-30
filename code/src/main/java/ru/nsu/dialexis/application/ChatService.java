@@ -21,13 +21,20 @@ public class ChatService {
     }
 
     public ChatMessage sendMessage(String text) {
-        ChatMessage message = new ChatMessage(currentUserName, Instant.now(), text);
+        ChatMessage message = new ChatMessage(
+                currentUserName,
+                Instant.now(),
+                text,
+                peerSessionManager.localAddress());
         peerSessionManager.send(message);
         notifyListener(message);
         return message;
     }
 
     public void onIncomingMessage(ChatMessage message) {
+        if (message.replyTo() != null) {
+            peerSessionManager.registerRemotePeer(message.replyTo());
+        }
         notifyListener(message);
     }
 

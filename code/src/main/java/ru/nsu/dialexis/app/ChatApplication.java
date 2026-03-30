@@ -22,6 +22,7 @@ public final class ChatApplication {
         ConsoleUi consoleUi = new ConsoleUi(chatService);
 
         chatService.setMessageListener(consoleUi::showMessage);
+        peerSessionManager.setSystemMessageListener(consoleUi::showSystemMessage);
 
         ChatGrpcEndpoint endpoint = new ChatGrpcEndpoint(chatService, new ProtoMessageMapper());
         peerSessionManager.startServer(options.listenPort(), endpoint);
