@@ -14,6 +14,7 @@ public final class ChatApplication {
     private ChatApplication() {
     }
 
+    /** Starts the console application and wires together UI, service and transport layers. */
     public static void main(String[] args) {
         CliOptions options;
         try {

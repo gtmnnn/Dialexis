@@ -8,6 +8,7 @@ import io.grpc.ServerBuilder;
 public class GrpcChatServer {
     private Server server;
 
+    /** Starts the local gRPC server on the requested port. */
     public void start(int port, ChatGrpcEndpoint endpoint) throws IOException {
         stop();
         server = ServerBuilder.forPort(port)
@@ -16,6 +17,7 @@ public class GrpcChatServer {
                 .start();
     }
 
+    /** Stops the local gRPC server if it is running. */
     public void stop() {
         if (server != null) {
             server.shutdownNow();
@@ -23,10 +25,12 @@ public class GrpcChatServer {
         }
     }
 
+    /** Returns whether the underlying gRPC server is currently active. */
     public boolean isStarted() {
         return server != null && !server.isShutdown();
     }
 
+    /** Returns the actual server port after startup. */
     public int port() {
         if (server == null) {
             throw new IllegalStateException("Server is not started");

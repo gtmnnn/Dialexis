@@ -12,6 +12,7 @@ public record CliOptions(
         Objects.requireNonNull(userName);
     }
 
+    /** Parses raw CLI arguments into validated application options. */
     public static CliOptions parse(String[] args) {
         String name = null;
         Integer port = null;
@@ -41,6 +42,7 @@ public record CliOptions(
         return new CliOptions(name, port, host, remotePort);
     }
 
+    /** Returns whether both remote peer arguments were provided. */
     public boolean hasRemotePeer() {
         return connectHost != null && connectPort != null;
     }

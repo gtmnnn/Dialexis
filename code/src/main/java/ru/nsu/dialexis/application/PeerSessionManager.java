@@ -19,21 +19,25 @@ public class PeerSessionManager {
     private PeerAddress remotePeer;
     private volatile boolean shutdownRequested;
 
+    /** Creates a session manager with default gRPC client and server implementations. */
     public PeerSessionManager() {
         this(new GrpcChatServer(), new GrpcChatClient());
     }
 
+    /** Creates a session manager with externally provided transport pieces, mainly for tests. */
     public PeerSessionManager(GrpcChatServer server, GrpcChatClient client) {
         this.server = Objects.requireNonNull(server);
         this.client = Objects.requireNonNull(client);
     }
 
+    /** Starts the local gRPC server and stores the resulting bind address. */
     public void startServer(int port, ChatGrpcEndpoint endpoint) throws IOException {
         server.start(port, endpoint);
         localAddress = new PeerAddress("127.0.0.1", server.port());
         emitSystemMessage("Server started on " + localAddress.host() + ":" + localAddress.port());
     }
 
+    /** Connects to a remote peer and performs handshake registration for reverse messaging. */
     public void connect(PeerAddress address) {
         if (localAddress == null) {
             throw new IllegalStateException("Local server must be started before connecting to a peer");
@@ -56,6 +60,7 @@ public class PeerSessionManager {
         }
     }
 
+    /** Sends a chat message to the currently connected remote peer. */
     public void send(ChatMessage message) {
         if (remotePeer == null) {
             emitSystemMessage("No remote peer is connected yet. Message stays local.");
@@ -74,10 +79,12 @@ public class PeerSessionManager {
         }
     }
 
+    /** Registers a callback for transport-level status messages. */
     public void setSystemMessageListener(Consumer<String> systemMessageListener) {
         this.systemMessageListener = systemMessageListener;
     }
 
+    /** Remembers a peer announced through handshake so this node can send messages back. */
     public void registerRemotePeer(PeerAddress address) {
         if (address == null) {
             return;
@@ -94,6 +101,7 @@ public class PeerSessionManager {
         }
     }
 
+    /** Closes the current outgoing connection but keeps the local server running. */
     public void disconnect() {
         if (remotePeer == null) {
             emitSystemMessage("No remote peer is connected");
@@ -105,6 +113,7 @@ public class PeerSessionManager {
         emitSystemMessage("Disconnected from peer " + previous.host() + ":" + previous.port());
     }
 
+    /** Stops both transport endpoints and clears the stored session state. */
     public void shutdown() {
         if (shutdownRequested) {
             return;

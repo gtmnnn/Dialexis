@@ -12,15 +12,18 @@ public class ChatService {
     private final PeerSessionManager peerSessionManager;
     private MessageListener messageListener;
 
+    /** Creates the chat service for a concrete local user and transport session. */
     public ChatService(String currentUserName, PeerSessionManager peerSessionManager) {
         this.currentUserName = Objects.requireNonNull(currentUserName);
         this.peerSessionManager = Objects.requireNonNull(peerSessionManager);
     }
 
+    /** Registers a listener that receives locally sent and remotely received messages. */
     public void setMessageListener(MessageListener messageListener) {
         this.messageListener = messageListener;
     }
 
+    /** Builds and sends a message if the text is not blank. */
     public Optional<ChatMessage> sendMessage(String text) {
         if (text == null || text.isBlank()) {
             return Optional.empty();
@@ -31,6 +34,7 @@ public class ChatService {
         return Optional.of(message);
     }
 
+    /** Pushes an incoming message to the UI-facing listener. */
     public void onIncomingMessage(ChatMessage message) {
         notifyListener(message);
     }
