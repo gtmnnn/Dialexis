@@ -1,8 +1,10 @@
 package ru.nsu.dialexis.application;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
+import io.grpc.StatusRuntimeException;
 import ru.nsu.dialexis.domain.ChatMessage;
 import ru.nsu.dialexis.domain.PeerAddress;
 import ru.nsu.dialexis.transport.grpc.ChatGrpcEndpoint;
@@ -15,14 +17,15 @@ public class PeerSessionManager {
     private Consumer<String> systemMessageListener;
     private PeerAddress localAddress;
     private PeerAddress remotePeer;
+    private volatile boolean shutdownRequested;
 
     public PeerSessionManager() {
         this(new GrpcChatServer(), new GrpcChatClient());
     }
 
     public PeerSessionManager(GrpcChatServer server, GrpcChatClient client) {
-        this.server = server;
-        this.client = client;
+        this.server = Objects.requireNonNull(server);
+        this.client = Objects.requireNonNull(client);
     }
 
     public void startServer(int port, ChatGrpcEndpoint endpoint) throws IOException {
@@ -35,10 +38,22 @@ public class PeerSessionManager {
         if (localAddress == null) {
             throw new IllegalStateException("Local server must be started before connecting to a peer");
         }
-        client.connect(address);
-        remotePeer = address;
-        client.registerPeer(localAddress);
-        emitSystemMessage("Connected to peer " + address.host() + ":" + address.port());
+        try {
+            client.connect(address);
+            remotePeer = address;
+            client.registerPeer(localAddress);
+            emitSystemMessage("Connected to peer " + address.host() + ":" + address.port());
+        } catch (StatusRuntimeException e) {
+            String details = e.getStatus().getDescription();
+            emitSystemMessage("Failed to connect to peer " + address.host() + ":" + address.port()
+                    + " (" + e.getStatus().getCode()
+                    + (details == null || details.isBlank() ? "" : ": " + details) + ")");
+            remotePeer = null;
+        } catch (RuntimeException e) {
+            emitSystemMessage("Failed to connect to peer " + address.host() + ":" + address.port()
+                    + " (" + e.getClass().getSimpleName() + ")");
+            remotePeer = null;
+        }
     }
 
     public void send(ChatMessage message) {
@@ -46,8 +61,17 @@ public class PeerSessionManager {
             emitSystemMessage("No remote peer is connected yet. Message stays local.");
             return;
         }
-        client.send(message);
-        emitSystemMessage("Sent message to " + remotePeer.host() + ":" + remotePeer.port());
+        try {
+            client.send(message);
+        } catch (StatusRuntimeException e) {
+            String details = e.getStatus().getDescription();
+            emitSystemMessage("Failed to send message to " + remotePeer.host() + ":" + remotePeer.port()
+                    + " (" + e.getStatus().getCode()
+                    + (details == null || details.isBlank() ? "" : ": " + details) + ")");
+        } catch (RuntimeException e) {
+            emitSystemMessage("Failed to send message to " + remotePeer.host() + ":" + remotePeer.port()
+                    + " (" + e.getClass().getSimpleName() + ")");
+        }
     }
 
     public void setSystemMessageListener(Consumer<String> systemMessageListener) {
@@ -59,13 +83,22 @@ public class PeerSessionManager {
             return;
         }
         if (remotePeer == null || !remotePeer.equals(address)) {
-            client.connect(address);
-            remotePeer = address;
-            emitSystemMessage("Registered peer " + address.host() + ":" + address.port());
+            try {
+                client.connect(address);
+                remotePeer = address;
+                emitSystemMessage("Registered peer " + address.host() + ":" + address.port());
+            } catch (RuntimeException e) {
+                emitSystemMessage("Failed to register peer " + address.host() + ":" + address.port()
+                        + " (" + e.getClass().getSimpleName() + ")");
+            }
         }
     }
 
     public void shutdown() {
+        if (shutdownRequested) {
+            return;
+        }
+        shutdownRequested = true;
         client.close();
         server.stop();
         emitSystemMessage("Transport stopped");

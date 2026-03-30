@@ -1,6 +1,7 @@
 package ru.nsu.dialexis.application;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.Objects;
 
 import ru.nsu.dialexis.domain.ChatMessage;
@@ -20,11 +21,14 @@ public class ChatService {
         this.messageListener = messageListener;
     }
 
-    public ChatMessage sendMessage(String text) {
+    public Optional<ChatMessage> sendMessage(String text) {
+        if (text == null || text.isBlank()) {
+            return Optional.empty();
+        }
         ChatMessage message = new ChatMessage(currentUserName, Instant.now(), text);
         peerSessionManager.send(message);
         notifyListener(message);
-        return message;
+        return Optional.of(message);
     }
 
     public void onIncomingMessage(ChatMessage message) {

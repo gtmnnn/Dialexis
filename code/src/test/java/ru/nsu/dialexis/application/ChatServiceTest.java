@@ -1,7 +1,10 @@
 package ru.nsu.dialexis.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,13 +19,30 @@ class ChatServiceTest {
         ChatService chatService = new ChatService("alice", peerSessionManager);
         chatService.setMessageListener(listener);
 
-        ChatMessage message = chatService.sendMessage("hello");
+        var result = chatService.sendMessage("hello");
+
+        assertTrue(result.isPresent());
+        ChatMessage message = result.get();
 
         assertEquals("alice", message.sender());
         assertEquals("hello", message.text());
         assertNotNull(message.timestamp());
         assertEquals(message, peerSessionManager.lastMessage);
         assertEquals(message, listener.lastMessage);
+    }
+
+    @Test
+    void sendMessageIgnoresBlankText() {
+        RecordingPeerSessionManager peerSessionManager = new RecordingPeerSessionManager();
+        RecordingMessageListener listener = new RecordingMessageListener();
+        ChatService chatService = new ChatService("alice", peerSessionManager);
+        chatService.setMessageListener(listener);
+
+        var result = chatService.sendMessage("   ");
+
+        assertFalse(result.isPresent());
+        assertNull(peerSessionManager.lastMessage);
+        assertNull(listener.lastMessage);
     }
 
     private static final class RecordingPeerSessionManager extends PeerSessionManager {

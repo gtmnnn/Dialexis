@@ -29,4 +29,50 @@ class CliOptionsTest {
                 "--port", "5000"
         }));
     }
+
+    @Test
+    void rejectsBlankName() {
+        assertThrows(IllegalArgumentException.class, () -> CliOptions.parse(new String[] {
+                "--name", "   ",
+                "--port", "5000"
+        }));
+    }
+
+    @Test
+    void rejectsMissingPort() {
+        assertThrows(IllegalArgumentException.class, () -> CliOptions.parse(new String[] {
+                "--name", "alice"
+        }));
+    }
+
+    @Test
+    void rejectsUnknownArgument() {
+        assertThrows(IllegalArgumentException.class, () -> CliOptions.parse(new String[] {
+                "--name", "alice",
+                "--port", "5000",
+                "--wat", "x"
+        }));
+    }
+
+    @Test
+    void rejectsMissingValueForOption() {
+        assertThrows(IllegalArgumentException.class, () -> CliOptions.parse(new String[] {
+                "--name"
+        }));
+    }
+
+    @Test
+    void rejectsIncompleteRemotePeerArguments() {
+        assertThrows(IllegalArgumentException.class, () -> CliOptions.parse(new String[] {
+                "--name", "alice",
+                "--port", "5000",
+                "--connect-host", "127.0.0.1"
+        }));
+
+        assertThrows(IllegalArgumentException.class, () -> CliOptions.parse(new String[] {
+                "--name", "alice",
+                "--port", "5000",
+                "--connect-port", "5001"
+        }));
+    }
 }
