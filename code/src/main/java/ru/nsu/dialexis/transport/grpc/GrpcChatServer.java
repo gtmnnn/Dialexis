@@ -2,31 +2,35 @@ package ru.nsu.dialexis.transport.grpc;
 
 import java.io.IOException;
 
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+
 public class GrpcChatServer {
-    private boolean started;
-    private int port;
-    private ChatGrpcEndpoint endpoint;
+    private Server server;
 
     public void start(int port, ChatGrpcEndpoint endpoint) throws IOException {
-        this.port = port;
-        this.endpoint = endpoint;
-        this.started = true;
+        stop();
+        server = ServerBuilder.forPort(port)
+                .addService(endpoint)
+                .build()
+                .start();
     }
 
     public void stop() {
-        this.started = false;
-        this.endpoint = null;
+        if (server != null) {
+            server.shutdownNow();
+            server = null;
+        }
     }
 
     public boolean isStarted() {
-        return started;
+        return server != null && !server.isShutdown();
     }
 
     public int port() {
-        return port;
-    }
-
-    public ChatGrpcEndpoint endpoint() {
-        return endpoint;
+        if (server == null) {
+            throw new IllegalStateException("Server is not started");
+        }
+        return server.getPort();
     }
 }

@@ -3,19 +3,21 @@ package ru.nsu.dialexis.transport.grpc;
 import java.time.Instant;
 
 import ru.nsu.dialexis.domain.ChatMessage;
+import ru.nsu.dialexis.proto.ChatMessageRequest;
 
 public class ProtoMessageMapper {
-    public TransportChatMessage toTransport(ChatMessage message) {
-        return new TransportChatMessage(
-                message.sender(),
-                message.timestamp().toString(),
-                message.text());
+    public ChatMessageRequest toProto(ChatMessage message) {
+        return ChatMessageRequest.newBuilder()
+                .setSender(message.sender())
+                .setTimestamp(message.timestamp().toString())
+                .setText(message.text())
+                .build();
     }
 
-    public ChatMessage fromTransport(TransportChatMessage message) {
+    public ChatMessage fromProto(ChatMessageRequest message) {
         return new ChatMessage(
-                message.sender(),
-                Instant.parse(message.timestamp()),
-                message.text());
+                message.getSender(),
+                Instant.parse(message.getTimestamp()),
+                message.getText());
     }
 }
