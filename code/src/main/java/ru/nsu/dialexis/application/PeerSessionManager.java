@@ -94,6 +94,17 @@ public class PeerSessionManager {
         }
     }
 
+    public void disconnect() {
+        if (remotePeer == null) {
+            emitSystemMessage("No remote peer is connected");
+            return;
+        }
+        client.close();
+        PeerAddress previous = remotePeer;
+        remotePeer = null;
+        emitSystemMessage("Disconnected from peer " + previous.host() + ":" + previous.port());
+    }
+
     public void shutdown() {
         if (shutdownRequested) {
             return;
