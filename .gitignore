@@ -1,0 +1,22 @@
+.DS_Store
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Java / Gradle
+**/build/
+**/.gradle/
+**/out/
+*.class
+
+# Logs
+*.log
+
+# OS / temp files
+*.swp
+*.swo
+*~
