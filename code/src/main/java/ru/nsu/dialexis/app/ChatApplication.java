@@ -14,29 +14,48 @@ public final class ChatApplication {
     private ChatApplication() {
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        CliOptions options = CliOptions.parse(args);
+    public static void main(String[] args) {
+        CliOptions options;
+        try {
+            options = CliOptions.parse(args);
+        } catch (RuntimeException e) {
+            System.err.println(e.getMessage());
+            System.err.println();
+            System.err.println(usage());
+            return;
+        }
 
         PeerSessionManager peerSessionManager = new PeerSessionManager();
         ChatService chatService = new ChatService(options.userName(), peerSessionManager);
-        ConsoleUi consoleUi = new ConsoleUi(chatService);
+        ConsoleUi consoleUi = new ConsoleUi(chatService, peerSessionManager);
 
         chatService.setMessageListener(consoleUi::showMessage);
         peerSessionManager.setSystemMessageListener(consoleUi::showSystemMessage);
 
-        ChatGrpcEndpoint endpoint = new ChatGrpcEndpoint(chatService, peerSessionManager, new ProtoMessageMapper());
-        peerSessionManager.startServer(options.listenPort(), endpoint);
-        consoleUi.showSystemMessage("Local node is listening on port " + options.listenPort());
+        try {
+            ChatGrpcEndpoint endpoint = new ChatGrpcEndpoint(chatService, peerSessionManager, new ProtoMessageMapper());
+            peerSessionManager.startServer(options.listenPort(), endpoint);
+        } catch (IOException e) {
+            System.err.println("Failed to start local server: " + e.getMessage());
+            return;
+        }
 
         if (options.hasRemotePeer()) {
             peerSessionManager.connect(new PeerAddress(options.connectHost(), options.connectPort()));
-            consoleUi.showSystemMessage("Remote peer configured: "
-                    + options.connectHost() + ":" + options.connectPort());
-        } else {
-            consoleUi.showSystemMessage("No remote peer configured. Running in server mode.");
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(peerSessionManager::shutdown));
         consoleUi.start();
+    }
+
+    private static String usage() {
+        return """
+                Usage:
+                  dialexis --name <username> --port <listenPort> [--connect-host <host> --connect-port <port>]
+
+                Examples:
+                  dialexis --name Alice --port 50051
+                  dialexis --name Bob --port 50052 --connect-host 127.0.0.1 --connect-port 50051
+                """.trim();
     }
 }
