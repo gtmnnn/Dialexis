@@ -30,5 +30,14 @@ class MessageFormatterTest {
 
         assertEquals("Started", formatter.formatStatus("Started"));
     }
-}
 
+    @Test
+    void humanizesConnectionEvents() {
+        MessageFormatter formatter = new MessageFormatter();
+
+        assertEquals("Подключились к собеседнику: 127.0.0.1:5005",
+                formatter.formatStatus("Connected to peer 127.0.0.1:5005"));
+        assertEquals("Собеседник зарегистрирован: 127.0.0.1:5006",
+                formatter.formatStatus("Registered peer 127.0.0.1:5006"));
+    }
+}

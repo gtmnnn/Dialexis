@@ -45,6 +45,19 @@ class ChatServiceTest {
         assertNull(listener.lastMessage);
     }
 
+    @Test
+    void incomingMessageNotifiesListener() {
+        RecordingPeerSessionManager peerSessionManager = new RecordingPeerSessionManager();
+        RecordingMessageListener listener = new RecordingMessageListener();
+        ChatService chatService = new ChatService("alice", peerSessionManager);
+        chatService.setMessageListener(listener);
+        ChatMessage incoming = new ChatMessage("bob", java.time.Instant.parse("2026-03-30T10:15:30Z"), "hi");
+
+        chatService.onIncomingMessage(incoming);
+
+        assertEquals(incoming, listener.lastMessage);
+    }
+
     private static final class RecordingPeerSessionManager extends PeerSessionManager {
         private ChatMessage lastMessage;
 

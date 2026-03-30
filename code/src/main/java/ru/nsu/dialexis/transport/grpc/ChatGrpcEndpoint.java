@@ -14,6 +14,7 @@ public class ChatGrpcEndpoint extends ChatEndpointGrpc.ChatEndpointImplBase {
     private final PeerSessionManager peerSessionManager;
     private final ProtoMessageMapper mapper;
 
+    /** Creates a gRPC endpoint that delegates handshake and message delivery to the application layer. */
     public ChatGrpcEndpoint(ChatService chatService, PeerSessionManager peerSessionManager, ProtoMessageMapper mapper) {
         this.chatService = chatService;
         this.peerSessionManager = peerSessionManager;
@@ -21,6 +22,7 @@ public class ChatGrpcEndpoint extends ChatEndpointGrpc.ChatEndpointImplBase {
     }
 
     @Override
+    /** Registers the remote peer so the receiver can initiate messages back. */
     public void registerPeer(PeerRegistrationRequest request, StreamObserver<ChatMessageAck> responseObserver) {
         peerSessionManager.registerRemotePeer(mapper.fromRegistrationProto(request));
         responseObserver.onNext(ChatMessageAck.newBuilder()
@@ -30,6 +32,7 @@ public class ChatGrpcEndpoint extends ChatEndpointGrpc.ChatEndpointImplBase {
     }
 
     @Override
+    /** Converts protobuf payload to the domain model and forwards it to the chat service. */
     public void sendMessage(ChatMessageRequest request, StreamObserver<ChatMessageAck> responseObserver) {
         ChatMessage message = mapper.fromProto(request);
         chatService.onIncomingMessage(message);

@@ -25,6 +25,7 @@ public final class MessageFormatter {
     private static final Pattern DISCONNECTED =
             Pattern.compile("^Disconnected from peer (?<host>[^:]+):(?<port>\\d+)$");
 
+    /** Formats a domain chat message for user-facing output. */
     public String format(ChatMessage message) {
         Objects.requireNonNull(message);
         return String.format("[%s] %s: %s",
@@ -33,11 +34,13 @@ public final class MessageFormatter {
                 message.text());
     }
 
+    /** Formats a transport or lifecycle message with the system prefix. */
     public String formatSystem(String text) {
         Objects.requireNonNull(text);
         return "[system] " + humanizeSystem(text);
     }
 
+    /** Formats status text without adding the console system prefix. */
     public String formatStatus(String text) {
         Objects.requireNonNull(text);
         return humanizeSystem(text);
@@ -89,4 +92,3 @@ public final class MessageFormatter {
         return text;
     }
 }
-
