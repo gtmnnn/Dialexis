@@ -10,6 +10,7 @@
 # Java / Gradle
 **/build/
 **/.gradle/
+**/.gradle-home/
 **/out/
 *.class
 
