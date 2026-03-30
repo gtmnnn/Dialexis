@@ -260,7 +260,9 @@ classDiagram
         +main(String[] args)
     }
 
-    class GuiApplication
+    class GuiApplication {
+        +start(Stage stage)
+    }
 
     class CliOptions {
         +String userName
@@ -325,10 +327,20 @@ classDiagram
         +fromRegistrationProto(PeerRegistrationRequest request)
     }
 
-    class ChatMessage
-    class PeerAddress
+    class ChatMessage {
+        +String sender
+        +Instant timestamp
+        +String text
+    }
+
+    class PeerAddress {
+        +String host
+        +int port
+    }
+
     class MessageListener {
         <<interface>>
+        +onMessage(ChatMessage message)
     }
 
     ChatApplication --> CliOptions
