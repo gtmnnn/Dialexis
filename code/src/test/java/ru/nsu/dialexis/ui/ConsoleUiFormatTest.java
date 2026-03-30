@@ -6,18 +6,15 @@ import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 
-import ru.nsu.dialexis.application.ChatService;
-import ru.nsu.dialexis.application.PeerSessionManager;
 import ru.nsu.dialexis.domain.ChatMessage;
 
 class ConsoleUiFormatTest {
     @Test
     void formatsMessageAsTimestampSenderText() {
-        PeerSessionManager sessionManager = new PeerSessionManager();
-        ConsoleUi ui = new ConsoleUi(new ChatService("alice", sessionManager), sessionManager);
+        MessageFormatter formatter = new MessageFormatter();
         ChatMessage message = new ChatMessage("bob", Instant.parse("2026-03-30T10:15:30Z"), "hello");
 
-        String formatted = ui.formatMessage(message);
+        String formatted = formatter.format(message);
 
         assertEquals("[2026-03-30 10:15:30] bob: hello", formatted);
     }

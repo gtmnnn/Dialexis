@@ -1,7 +1,5 @@
 package ru.nsu.dialexis.ui;
 
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -10,11 +8,9 @@ import ru.nsu.dialexis.application.PeerSessionManager;
 import ru.nsu.dialexis.domain.ChatMessage;
 
 public class ConsoleUi {
-    private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC);
-
     private final ChatService chatService;
     private final PeerSessionManager peerSessionManager;
+    private final MessageFormatter formatter = new MessageFormatter();
 
     public ConsoleUi(ChatService chatService, PeerSessionManager peerSessionManager) {
         this.chatService = Objects.requireNonNull(chatService);
@@ -46,17 +42,10 @@ public class ConsoleUi {
     }
 
     public void showMessage(ChatMessage message) {
-        System.out.println(formatMessage(message));
-    }
-
-    public String formatMessage(ChatMessage message) {
-        return String.format("[%s] %s: %s",
-                FORMATTER.format(message.timestamp()),
-                message.sender(),
-                message.text());
+        System.out.println(formatter.format(message));
     }
 
     public void showSystemMessage(String text) {
-        System.out.println("[system] " + text);
+        System.out.println(formatter.formatSystem(text));
     }
 }

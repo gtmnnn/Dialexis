@@ -1,0 +1,78 @@
+.root {
+  -fx-font-family: "Segoe UI";
+  -fx-font-size: 13px;
+  -fx-background-color: #0f172a;
+}
+
+.card {
+  -fx-background-color: rgba(255, 255, 255, 0.06);
+  -fx-background-radius: 12;
+  -fx-padding: 12;
+}
+
+.title {
+  -fx-text-fill: #e2e8f0;
+  -fx-font-size: 16px;
+  -fx-font-weight: 700;
+}
+
+.subtitle {
+  -fx-text-fill: #94a3b8;
+}
+
+.status {
+  -fx-text-fill: #94a3b8;
+  -fx-font-style: italic;
+}
+
+.label {
+  -fx-text-fill: #cbd5e1;
+}
+
+.text-field {
+  -fx-background-radius: 10;
+  -fx-border-radius: 10;
+  -fx-background-color: rgba(255, 255, 255, 0.10);
+  -fx-border-color: rgba(255, 255, 255, 0.18);
+  -fx-text-fill: #e2e8f0;
+  -fx-prompt-text-fill: rgba(226, 232, 240, 0.55);
+}
+
+.button {
+  -fx-background-radius: 10;
+  -fx-padding: 8 14 8 14;
+  -fx-background-color: rgba(59, 130, 246, 0.85);
+  -fx-text-fill: #ffffff;
+  -fx-font-weight: 600;
+}
+
+.button:disabled {
+  -fx-opacity: 0.45;
+}
+
+.button.secondary {
+  -fx-background-color: rgba(148, 163, 184, 0.22);
+}
+
+.button.danger {
+  -fx-background-color: rgba(239, 68, 68, 0.75);
+}
+
+.list-view {
+  -fx-background-color: transparent;
+  -fx-control-inner-background: rgba(255, 255, 255, 0.06);
+  -fx-background-radius: 12;
+  -fx-padding: 6;
+}
+
+.list-cell {
+  -fx-background-color: transparent;
+  -fx-text-fill: #e2e8f0;
+  -fx-padding: 8 10 8 10;
+}
+
+.list-cell.system {
+  -fx-text-fill: #94a3b8;
+  -fx-font-style: italic;
+}
+

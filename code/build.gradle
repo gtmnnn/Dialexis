@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.google.protobuf' version '0.9.4'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group = 'ru.nsu'
@@ -36,6 +37,22 @@ application {
 
 tasks.named('run') {
     standardInput = System.in
+}
+
+javafx {
+    version = '21.0.5'
+    modules = ['javafx.controls']
+}
+
+tasks.register('runGui', JavaExec) {
+    group = 'application'
+    description = 'Runs the JavaFX GUI application'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'ru.nsu.dialexis.app.GuiApplication'
+    jvmArgs = [
+            '--module-path', classpath.asPath,
+            '--add-modules', 'javafx.controls'
+    ]
 }
 
 protobuf {
