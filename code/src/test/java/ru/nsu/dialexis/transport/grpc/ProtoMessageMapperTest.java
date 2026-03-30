@@ -7,6 +7,7 @@ import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 import ru.nsu.dialexis.domain.ChatMessage;
+import ru.nsu.dialexis.proto.ChatMessageRequest;
 
 class ProtoMessageMapperTest {
     private final ProtoMessageMapper mapper = new ProtoMessageMapper();
@@ -15,18 +16,22 @@ class ProtoMessageMapperTest {
     void mapsDomainMessageToProto() {
         ChatMessage message = new ChatMessage("alice", Instant.parse("2026-03-30T10:15:30Z"), "hello");
 
-        TransportChatMessage request = mapper.toTransport(message);
+        ChatMessageRequest request = mapper.toProto(message);
 
-        assertEquals("alice", request.sender());
-        assertEquals("2026-03-30T10:15:30Z", request.timestamp());
-        assertEquals("hello", request.text());
+        assertEquals("alice", request.getSender());
+        assertEquals("2026-03-30T10:15:30Z", request.getTimestamp());
+        assertEquals("hello", request.getText());
     }
 
     @Test
     void mapsProtoToDomainMessage() {
-        TransportChatMessage request = new TransportChatMessage("bob", "2026-03-30T10:15:30Z", "hi");
+        ChatMessageRequest request = ChatMessageRequest.newBuilder()
+                .setSender("bob")
+                .setTimestamp("2026-03-30T10:15:30Z")
+                .setText("hi")
+                .build();
 
-        ChatMessage message = mapper.fromTransport(request);
+        ChatMessage message = mapper.fromProto(request);
 
         assertEquals("bob", message.sender());
         assertEquals(Instant.parse("2026-03-30T10:15:30Z"), message.timestamp());
